@@ -11,30 +11,14 @@ const {
     yvmPath,
 } = require('../util/utils')
 
-const directoryStack = []
-
 const getDownloadPath = (version, rootPath) =>
     path.resolve(rootPath, 'versions', `v${version}.tar.gz`)
 
 const getUrl = version =>
     `https://yarnpkg.com/downloads/${version}/yarn-v${version}.tar.gz`
 
-const checkDirectories = rootPath => {
-    if (!fs.existsSync(versionRootPath(rootPath))) {
-        fs.mkdirSync(versionRootPath(rootPath))
-        directoryStack.push(versionRootPath(rootPath))
-    }
-}
-
-const cleanDirectories = () => {
-    while (directoryStack.length) {
-        fs.rmdirSync(directoryStack.pop())
-    }
-}
-
 const checkForVersion = (version, rootPath) => {
     const versionPath = getExtractionPath(version, rootPath)
-    checkDirectories(rootPath)
     return fs.existsSync(versionPath)
 }
 
@@ -80,35 +64,25 @@ const extractYarn = (version, rootPath) => {
     })
 }
 
-const installVersion = (version, rootPath = yvmPath) => {
-    if (checkForVersion(version, rootPath)) {
-        log(`It looks like you already have yarn ${version} installed...`)
-        return Promise.resolve()
+const installVersion = async (version, rootPath = yvmPath) => {
+    try {
+        if (checkForVersion(version, rootPath)) {
+            log(`It looks like you already have yarn ${version} installed...`)
+            return
+        }
+        const versions = await getVersionsFromTags()
+        if (versions.indexOf(version) === -1) {
+            throw new Error('You have provided an invalid version number. use "yvm ls-remote" to see valid versions.')
+        }
+        await downloadVersion(version, rootPath)
+        log(`Finished downloading yarn version ${version}`)
+        return extractYarn(version, rootPath)
+    } catch (error) {
+        if (error) {
+            log(error)
+        }
+        throw err
     }
-    return getVersionsFromTags()
-        .then(versions => {
-            if (versions.indexOf(version) === -1) {
-                log(
-                    'You have provided an invalid version number. use "yvm ls-remote" to see valid versions.',
-                )
-                return Promise.reject()
-            }
-            log(`Installing yarn v${version} in ${rootPath}`)
-            return downloadVersion(version, rootPath)
-                .then(() => {
-                    log(`Finished downloading yarn version ${version}`)
-                    return extractYarn(version, rootPath)
-                })
-                .catch(err => {
-                    cleanDirectories()
-                    return Promise.reject(err)
-                })
-        })
-        .catch(error => {
-            if (error) {
-                log(error)
-            }
-        })
 }
 
 module.exports = installVersion

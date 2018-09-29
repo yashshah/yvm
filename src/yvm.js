@@ -27,10 +27,15 @@ argParser
     .command('install [version]')
     .alias('i')
     .description('Install the specified version of Yarn.')
-    .action(maybeVersion => {
+    .action(async (maybeVersion) => {
         const [version] = getSplitVersionAndArgs(maybeVersion)
         const install = require('./commands/install')
-        install(version)
+        try {
+            await install(version)
+        } catch (e) {
+            log(e)
+            log('Failed to install Yarn')
+        }
     })
 
 argParser
