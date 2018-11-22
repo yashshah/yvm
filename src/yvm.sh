@@ -31,14 +31,6 @@ save_last_used_yarn_version() {
     fi
 }
 
-yvm_check_for_yvmrc_and_change_yarn_version() {
-    echo "Checking"
-    if [ -e .yvmrc ]; then
-        echo "Yo"
-        yvm_use
-    fi
-}
-
 yvm_use() {
     local PROVIDED_VERSION=${1}
     NEW_PATH=$(yvm_call_node_script get-new-path ${PROVIDED_VERSION})
