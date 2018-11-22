@@ -1,7 +1,17 @@
 set -e
 
 program="${0##*/}"
+
+current_path="${PATH:-}"
 yvm_dir="${YVM_DIR:-}"
+
+if [ $current_path = *.yvm/versions/v* ]; then
+    yarn_version="$(yarn --version)"
+    yarn_version_base_directory="${yvm_dir}/versions/v${yarn_version}/"
+    yarn_directory="${yarn_version_base_directory}bin/"
+    exec -a "$yarn_directory" "$program" "$@"
+    return
+fi
 
 if [ "$program" = "yarn" ]; then
     yarn_version="${LAST_USED_YARN_VERSION:-}"
@@ -20,6 +30,7 @@ if [ "$program" = "yarn" ]; then
     if [ ! -d "${yarn_version_base_directory}" ]; then
         echo "The specified yarn version ${yarn_version} is not installed"
         echo 'Install it using "yvm install <version>"'
+        return
     fi
 
     yarn_directory="${yarn_version_base_directory}bin/"
