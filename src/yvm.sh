@@ -31,6 +31,14 @@ save_last_used_yarn_version() {
     fi
 }
 
+yvm_check_for_yvmrc_and_change_yarn_version() {
+    echo "Checking"
+    if [ -e .yvmrc ]; then
+        echo "Yo"
+        yvm_use
+    fi
+}
+
 yvm_use() {
     local PROVIDED_VERSION=${1}
     NEW_PATH=$(yvm_call_node_script get-new-path ${PROVIDED_VERSION})
@@ -86,21 +94,12 @@ yvm_() {
     fi
 }
 
+export PATH="${YVM_DIR}/shim/":$PATH
+
 if [ ${interactive} = 1 ]; then
     yvm() {
         yvm_ 'function' $@
     }
-    last_used_yarn="${LAST_USED_YARN_VERSION:-}"
-    if [ -z "$last_used_yarn" ]; then
-        yvm_echo "No default yarn version set. Use yvm install <version> or yvm use <version> to fix this"
-    else
-        if ! type "node" > /dev/null; then
-            yvm_echo "YVM Could not automatically set yarn version."
-            yvm_echo "Please ensure your YVM env variables and sourcing are set below sourcing node/nvm in your .zshrc or .bash_profile"
-        else
-            yvm_use ${last_used_yarn}
-        fi
-    fi
 else
     yvm_ 'script' $@
 fi

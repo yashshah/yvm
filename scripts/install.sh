@@ -16,6 +16,7 @@ artifacts_dir="artifacts/webpack_build"
 YVM_DIR=${YVM_INSTALL_DIR-"${HOME}/.yvm"}
 zip_download_path="${YVM_DIR}/yvm.zip"
 sh_install_path="${YVM_DIR}/yvm.sh"
+yarn_shim_install_path="${YVM_DIR}/shim/yarn"
 
 YVM_ALIAS_DIR=${YVM_ALIAS_DIR-"/usr/local/bin"}
 executable_alias_path="${YVM_ALIAS_DIR}/yvm"
@@ -42,6 +43,7 @@ else
 fi
 
 chmod +x ${sh_install_path}
+chmod +x ${yarn_shim_install_path}
 ln -s ${sh_install_path} ${executable_alias_path}
 
 added_newline=0

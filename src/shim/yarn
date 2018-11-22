@@ -1,0 +1,22 @@
+set -e
+
+program="${0##*/}"
+yvm_dir="${YVM_DIR:-}"
+
+if [ "$program" = "yarn" ]; then
+    last_used_yarn="${LAST_USED_YARN_VERSION:-}"
+    if [ -e .yvmrc ]; then
+        last_used_yarn="`cat .yvmrc`"
+    else
+        if [ -z "$last_used_yarn" ]; then
+            yvm_echo 'No .yvmrc file found here and no default version of yarn set'
+            yvm_echo 'Please use the command "yvm use <version>" or install a version using "yvm install <version>"'
+            return
+        fi
+    fi
+
+    yarn_directory="${yvm_dir}/versions/v${last_used_yarn}/bin/"
+    PATH="$yarn_directory":$PATH
+
+    exec -a "$yarn_directory" "$program" "$@"
+fi
